@@ -7,6 +7,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 public class BlockFrameDigSpring extends Block	//BlockFrame
 {
+	private int breakNum;
+	private long breakTick;
 
 	public BlockFrameDigSpring()
 	{
@@ -19,7 +21,10 @@ public class BlockFrameDigSpring extends Block	//BlockFrame
 			return;
 		}
 
-		removeNeighboringFrames(world, x, y, z);
+		if (breakTick != world.getTotalWorldTime() && canChainBreak(breakNum))
+			removeNeighboringFrames(world, x, y, z);
+		else
+			this.breakTick = world.getTotalWorldTime();
 	}
 
 	protected void removeNeighboringFrames(World world, int x, int y, int z) {
@@ -28,6 +33,22 @@ public class BlockFrameDigSpring extends Block	//BlockFrame
 			if (nBlock == this) {
 				world.setBlockToAir(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ);
 			}
+		}
+	}
+
+	private boolean canChainBreak(int breakNum)
+	{
+		if (DigSpringConfig.frameDestructionRange == -1)
+			return true;
+
+		if (0 <= breakNum && breakNum < DigSpringConfig.frameDestructionRange)
+		{
+			this.breakNum++;
+			return true;
+		}
+		else {
+			this.breakNum = 0;
+			return false;
 		}
 	}
 
